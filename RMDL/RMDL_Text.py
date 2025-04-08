@@ -189,7 +189,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
         # model_DNN.append(Sequential())
         try:
             print("DNN " + str(i))
-            filepath = "weights\weights_DNN_" + str(i) + ".hdf5"
+            filepath = "weights\weights_DNN_" + str(i) + ".keras"
             checkpoint = ModelCheckpoint(filepath,
                                          monitor='val_accuracy',
                                          verbose=1,
@@ -262,7 +262,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
     while i < random_deep[1]:
         try:
             print("RNN " + str(i))
-            filepath = "weights\weights_RNN_" + str(i) + ".hdf5"
+            filepath = "weights\weights_RNN_" + str(i) + ".keras"
             checkpoint = ModelCheckpoint(filepath,
                                          monitor='val_accuracy',
                                          verbose=1,
@@ -343,7 +343,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
 
 
 
-            filepath = "weights\weights_CNN_" + str(i) + ".hdf5"
+            filepath = "weights\weights_CNN_" + str(i) + ".keras"
             checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True,
                                          mode='max')
             callbacks_list = [checkpoint]

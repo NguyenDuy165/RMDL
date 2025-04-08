@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 RMDL: Random Multimodel Deep Learning for Classification
 
@@ -14,7 +15,7 @@ RMDL: Random Multimodel Deep Learning for Classification
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import nltk

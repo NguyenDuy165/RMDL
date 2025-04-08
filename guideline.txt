@@ -1,0 +1,35 @@
+1. Khởi động hadoop service
+cd C:\hadoop-3.3.6\bin
+start-dfs.cmd
+start-yarn.cmd
+
+2. Kiểm tra hadoop có khởi động thành công không
+vào http://localhost:8088
+vào http://localhost:9870
+
+3. Tập dataset sẽ sử dụng
+https://www.kaggle.com/datasets/kritanjalijain/amazon-reviews/data
+
+
+4. Command de chay
+hdfs dfs -rm -r /user/hadoop/output
+
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+    -files file:///D:/Project/RMDL/test_script.py `
+    -files file:///D:/Project/RMDL/test_reducer.py `
+    -mapper "python test_script.py" `
+    -reducer "python -c 'import sys; [print(line.strip()) for line in sys.stdin]'" `
+    -input /user/hadoop/localtest.txt `
+    -output /user/hadoop/output
+
+
+5. Chay tiep cai nay thi duoc ca mapper va reducer
+hdfs dfs -rm -r /user/hadoop/output
+
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+    -cacheFile hdfs:///user/hadoop/test_script.py#test_script.py `
+    -cacheFile hdfs:///user/hadoop/test_reducer.py#test_reducer.py `
+    -mapper "python test_script.py" `
+    -reducer "python test_reducer.py" `
+    -input /user/hadoop/localtest.txt `
+    -output /user/hadoop/output

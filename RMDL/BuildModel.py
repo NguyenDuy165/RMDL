@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 RMDL: Random Multimodel Deep Learning for Classification
 
@@ -16,7 +17,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from keras.models import Sequential
 import numpy as np
-from keras.constraints import maxnorm
+from keras.constraints import MaxNorm
 from keras.layers import Dense, Flatten
 from keras.layers import Conv1D,MaxPooling2D, \
     MaxPooling1D, Embedding, Dropout,\
@@ -24,8 +25,7 @@ from keras.layers import Conv1D,MaxPooling2D, \
     Activation,LSTM,Input
 from keras import backend as K
 from keras.models import Model
-from keras.layers.core import Lambda
-from keras.layers.merge import Concatenate
+from tensorflow.keras.layers import Lambda, Concatenate
 import tensorflow as tf
 from keras import optimizers
 import random
@@ -191,7 +191,7 @@ def Build_Model_CNN_Image(shape, nclasses, sparse_categorical,
     model.add(Flatten())
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(dropout))
-    model.add(Dense(nclasses,activation='softmax',kernel_constraint=maxnorm(3)))
+    model.add(Dense(nclasses,activation='softmax',kernel_constraint=MaxNorm(3)))
     model_tmp = model
     if sparse_categorical:
         model.compile(loss='sparse_categorical_crossentropy',

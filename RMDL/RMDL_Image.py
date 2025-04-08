@@ -142,7 +142,7 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
                                                                     dropout)
 
 
-            filepath = "weights\weights_DNN_" + str(i) + ".hdf5"
+            filepath = "weights\weights_DNN_" + str(i) + ".keras"
             checkpoint = ModelCheckpoint(filepath,
                                          monitor='val_accuracy',
                                          verbose=1,
@@ -195,7 +195,7 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
                                                                     random_optimizor,
                                                                     dropout)
 
-            filepath = "weights\weights_RNN_" + str(i) + ".hdf5"
+            filepath = "weights\weights_RNN_" + str(i) + ".keras"
             checkpoint = ModelCheckpoint(filepath,
                                          monitor='val_accuracy',
                                          verbose=1,
@@ -246,7 +246,7 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
                                                                     random_optimizor,
                                                                     dropout)
 
-            filepath = "weights\weights_CNN_" + str(i) + ".hdf5"
+            filepath = "weights\weights_CNN_" + str(i) + ".keras"
             checkpoint = ModelCheckpoint(filepath, 
                                          monitor='val_accuracy',
                                          verbose=1, 

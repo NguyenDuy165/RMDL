@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 RMDL: Random Multimodel Deep Learning for Classification
 

@@ -21,7 +21,7 @@ from RMDL import RMDL_Text as RMDL
 
 if __name__ == "__main__":
     print("Load IMDB dataset....")
-    MAX_NB_WORDS = 75000
+    MAX_NB_WORDS = 500
     (X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=MAX_NB_WORDS)
     print(len(X_train))
     print(y_test)
@@ -35,9 +35,9 @@ if __name__ == "__main__":
     X_test = np.array(X_test)
     X_test = np.array(X_test).ravel()
 
-    batch_size = 100
+    batch_size = 10
     sparse_categorical = 0
-    n_epochs = [500, 500, 500]  ## DNN--RNN-CNN
+    n_epochs = [5, 5, 5]  ## DNN--RNN-CNN
     Random_Deep = [3, 3,3]  ## DNN--RNN-CNN
 
     RMDL.Text_Classification(X_train, y_train, X_test, y_test,
