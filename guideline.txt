@@ -24,6 +24,10 @@ hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
 
 
 5. Chay tiep cai nay thi duoc ca mapper va reducer
+
+hdfs dfs -put D:/Project/RMDL/test_script.py /user/hadoop/test_script.py
+hdfs dfs -put D:/Project/RMDL/test_reducer.py /user/hadoop/test_reducer.py
+
 hdfs dfs -rm -r /user/hadoop/output
 
 hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
