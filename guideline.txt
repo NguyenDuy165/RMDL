@@ -37,3 +37,156 @@ hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
     -reducer "python test_reducer.py" `
     -input /user/hadoop/localtest.txt `
     -output /user/hadoop/output
+
+6. testing 16/04
+command test:
+
+hdfs dfs -rm -r /user/hadoop/amazon_preprocess_mapper.py
+hdfs dfs -rm -r /user/hadoop/amazon_preprocess_reducer.py
+hdfs dfs -put amazon_preprocess_mapper.py /user/hadoop/
+hdfs dfs -put amazon_preprocess_reducer.py /user/hadoop/
+hdfs dfs -rm -r /user/hadoop/output
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+    -cacheFile hdfs:///user/hadoop/rmdl_trained_model.keras#rmdl_trained_model.keras `
+    -cacheFile hdfs:///user/hadoop/amazon_preprocess_mapper.py#amazon_preprocess_mapper.py `
+    -cacheFile hdfs:///user/hadoop/amazon_preprocess_reducer.py#amazon_preprocess_reducer.py `
+    -mapper "python amazon_preprocess_mapper.py" `
+    -reducer "python amazon_preprocess_reducer.py" `
+    -input /user/hadoop/input/sample.csv `
+    -output /user/hadoop/output
+
+
+//loi o cac dong nay trong reducer
+from keras.models import load_model
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+
+--------------------------------------------------------
+1. Preprocess dataset
+hdfs dfs -rm -r /user/hadoop/amazon_mapper.py
+hdfs dfs -put amazon_mapper.py /user/hadoop/
+hdfs dfs -rm -r /user/hadoop/preprocessed
+
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+    -cacheFile hdfs:///user/hadoop/amazon_mapper.py#amazon_mapper.py `
+    -mapper "python amazon_mapper.py" `
+    -input  /user/hadoop/input/sample.csv `
+    -output /user/hadoop/preprocessed `
+    -numReduceTasks 0
+OK
+
+2. Use RMDL_training script 
+hdfs dfs -getmerge /user/hadoop/preprocessed preprocessed_reviews.csv
+python rmdl_training.py
+OK
+
+3. Hadoop Mapreduce
+hdfs dfs -rm -r /user/hadoop/artifacts
+hdfs dfs -mkdir -p /user/hadoop/artifacts
+hdfs dfs -put rmdl_trained_model.keras  /user/hadoop/artifacts/
+hdfs dfs -put tokenizer.pkl            /user/hadoop/artifacts/
+
+hdfs dfs -rm -r /user/hadoop/predictions
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+  -cacheFile `
+     file:///D:/Project/RMDL/amazon_mapper.py#amazon_mapper.py, `
+     file:///D:/Project/RMDL/amazon_reducer.py#amazon_reducer.py, `
+     file:///D:/Project/RMDL/rmdl_trained_model.keras#rmdl_trained_model.keras, `
+     file:///D:/Project/RMDL/tokenizer.pkl#tokenizer.pkl `
+  -mapper  "python amazon_mapper.py" `
+  -reducer "python amazon_reducer.py" `
+  -input   /user/hadoop/input/sample.csv `
+  -output  /user/hadoop/predictions
+
+4. Final 
+hdfs dfs -put dataset/train_first_1m.csv  /user/hadoop/input/
+hdfs dfs -put dataset/test_first_100k.csv   /user/hadoop/input/
+
+hdfs dfs -rm -r /user/hadoop/preprocessed_train
+hdfs dfs -rm -r /user/hadoop/preprocessed_test
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+  -cacheFile file:///D:/Project/RMDL/amazon_mapper.py#amazon_mapper.py `
+  -cacheFile file:///D:/Project/RMDL/amazon_reducer.py#amazon_reducer.py `
+  -mapper "python amazon_mapper.py" `
+  -reducer "python amazon_reducer.py" `
+  -input /user/hadoop/input/train_first_1m.csv `
+  -output /user/hadoop/preprocessed_train
+
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+  -cacheFile file:///D:/Project/RMDL/amazon_mapper.py#amazon_mapper.py `
+  -cacheFile file:///D:/Project/RMDL/amazon_reducer.py#amazon_reducer.py `
+  -mapper "python amazon_mapper.py" `
+  -reducer "python amazon_reducer.py" `
+  -input /user/hadoop/input/test_first_100k.csv `
+  -output /user/hadoop/preprocessed_test
+
+hdfs dfs -getmerge /user/hadoop/preprocessed_train D:/Project/RMDL/dataset/preprocessed_train.csv
+hdfs dfs -getmerge /user/hadoop/preprocessed_test D:/Project/RMDL/dataset/preprocessed_test.csv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------
+  
+hdfs dfs -rm -r /user/hadoop/predictions
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+    -cacheFile hdfs:///user/hadoop/artifacts/rmdl_trained_model.keras#rmdl_trained_model.keras `
+    -cacheFile hdfs:///user/hadoop/artifacts/tokenizer.pkl#tokenizer.pkl `
+    -mapper  "python amazon_mapper.py" `
+    -reducer "python amazon_reducer.py" `
+    -input   /user/hadoop/input/sample.csv `
+    -output  /user/hadoop/predictions
+
+hdfs dfs -rm -r /user/hadoop/predictions
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+  -cacheFile `
+     file:///D:/Project/RMDL/amazon_mapper.py#amazon_mapper.py, `
+     file:///D:/Project/RMDL/amazon_reducer.py#amazon_reducer.py `
+  -mapper   "C:/Users/Admin/AppData/Local/Programs/Python/Python312/python.exe amazon_mapper.py" `
+  -reducer  "C:/Users/Admin/AppData/Local/Programs/Python/Python312/python.exe amazon_reducer.py" `
+  -input    /user/hadoop/input/sample.csv `
+  -output   /user/hadoop/predictions
+
+
+
+
+
+hdfs dfs -rm -r /user/hadoop/preprocessed_train
+hdfs dfs -rm -r /user/hadoop/preprocessed_test
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+  -archives file:///D:/Project/RMDL/lib.zip#lib, ` 
+  -cacheFile file:///D:/Project/RMDL/amazon_mapper.py#amazon_mapper.py `
+  -cacheFile file:///D:/Project/RMDL/amazon_reducer.py#amazon_reducer.py `
+  -mapper "python amazon_mapper.py" `
+  -reducer "python amazon_reducer.py" `
+  -input /user/hadoop/input/train_first_1m.csv `
+  -output /user/hadoop/preprocessed_train
+
+
+# 1) clear any old outputhdfs dfs -rm -r /user/hadoop/preprocessed
+hadoop jar C:/hadoop-3.3.6/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar `
+  -archives      /user/hadoop/env/rmdlenv.zip#rmdlenv            `
+  -cacheFile     file:///D:/Project/RMDL/amazon_mapper.py#amazon_mapper.py `
+  -cacheFile     file:///D:/Project/RMDL/amazon_reducer.py#amazon_reducer.py `
+  -mapper        "rmdlenv/Scripts/python.exe amazon_mapper.py" `
+  -reducer       "rmdlenv/Scripts/python.exe amazon_reducer.py" `
+  -input         /user/hadoop/input/train.csv `
+  -input         /user/hadoop/input/test.csv  `
+  -output        /user/hadoop/preprocessed

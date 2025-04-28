@@ -28,6 +28,8 @@ from RMDL.Download import Download_Glove as GloVe
 from RMDL import text_feature_extraction as txt
 from RMDL import Global as G
 from RMDL import Plot as Plot
+from keras.layers import Input, Average
+from keras.models import Model
 
 
 def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
@@ -170,6 +172,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
 
     y_pr = []
     History = []
+    base_models_CNN = []
     score = []
 
     if no_of_classes==0:
@@ -355,6 +358,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                                           callbacks=callbacks_list,
                                           verbose=2)
             History.append(model_history)
+            base_models_CNN.append(model_CNN)
 
             model_tmp.load_weights(filepath)
             if sparse_categorical:
@@ -431,3 +435,16 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
     print("F1_Micro:",F1)
     print("F1_Macro:",F2)
     print("F1_weighted:",F3)
+
+    for idx, model in enumerate(base_models_CNN):
+        print(f"Model {idx} input shape: {model.input_shape}")
+
+    ensemble_input = Input(shape=(500,))
+    predictions = [model(ensemble_input) for model in base_models_CNN]
+    ensemble_output = Average()(predictions)
+    ensemble_model = Model(inputs=ensemble_input, outputs=ensemble_output)
+    ensemble_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    # Save the combined ensemble model as one file
+    ensemble_model.save("D:/Project/RMDL/rmdl_trained_model.keras")
+    print("Ensemble model saved as D:/Project/RMDL/rmdl_trained_model.keras")
