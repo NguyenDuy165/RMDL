@@ -1,30 +1,87 @@
-#First 1m rows of training dataset
-# import pandas as pd
+import csv
+import random
+import argparse
+import os
 
-# INPUT_CSV   = r"D:\Project\RMDL\dataset\train.csv"
-# OUTPUT_CSV  = r"D:\Project\RMDL\dataset\train_first_1m.csv"
-# NROWS       = 1_000_000
+def reservoir_sample(input_csv, output_csv, sample_size, has_header=True):
+    """
+    Performs reservoir sampling on a CSV to extract `sample_size` random rows.
+    Writes them (with header, if present) to `output_csv`.
+    """
+    reservoir = []
+    with open(input_csv, newline='', encoding='utf-8') as infile:
+        reader = csv.reader(infile)
+        header = next(reader) if has_header else None
 
-# # Read only the header to know the column count, then skip it when writing:
-# df = pd.read_csv(INPUT_CSV, nrows=NROWS, header=0)
+        for i, row in enumerate(reader, start=1):
+            if i <= sample_size:
+                reservoir.append(row)
+            else:
+                j = random.randrange(i)
+                if j < sample_size:
+                    reservoir[j] = row
 
-# # Write out exactly those rows, no header, no index
-# df.to_csv(OUTPUT_CSV, index=False, header=False)
+    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+    with open(output_csv, 'w', newline='', encoding='utf-8') as outfile:
+        writer = csv.writer(outfile)
+        if has_header:
+            writer.writerow(header)
+        writer.writerows(reservoir)
+    print(f"Wrote {sample_size} rows to {output_csv}")
 
-# print(f"Wrote first {NROWS} rows to {OUTPUT_CSV}")
+def make_output_path(input_csv, out_dir, sample_size, has_header, no_override):
+    """
+    Generate output filename: <basename>_sample_<size><_noheader?>.csv
+    e.g. train.csv -> train_sample_10000.csv
+    """
+    base, ext = os.path.splitext(os.path.basename(input_csv))
+    suffix = f"_sample_{sample_size}"
+    if no_override:
+        suffix += "_noheader"
+    filename = base + suffix + ext
+    return os.path.join(out_dir, filename)
 
+def main():
+    parser = argparse.ArgumentParser(description="Reservoir-sample CSV files.")
+    parser.add_argument("--train-csv",
+                        default=r"D:\Project\RMDL\dataset\preprocessed_train.csv",
+                        help="Path to the full train CSV")
+    parser.add_argument("--test-csv",
+                        default=r"D:\Project\RMDL\dataset\preprocessed_test.csv",
+                        help="Path to the full test CSV")
+    parser.add_argument("--out-dir",
+                        default=r"D:\Project\RMDL\dataset",
+                        help="Directory to write sample files into")
+    parser.add_argument("--train-size",
+                        type=int,
+                        default=10000,
+                        help="Number of rows to sample from train CSV")
+    parser.add_argument("--test-size",
+                        type=int,
+                        default=1000,
+                        help="Number of rows to sample from test CSV")
+    parser.add_argument("--no-header",
+                        action="store_true",
+                        help="If set, assumes CSVs have no header and will not write one")
 
-#First 100k rows of testing dataset
-import pandas as pd
+    args = parser.parse_args()
 
-INPUT_CSV   = r"D:\Project\RMDL\dataset\test.csv"
-OUTPUT_CSV  = r"D:\Project\RMDL\dataset\test_first_100k.csv"
-NROWS       = 100_000
+    # compute output paths
+    train_out = make_output_path(args.train_csv, args.out_dir, args.train_size, not args.no_header, args.no_header)
+    test_out  = make_output_path(args.test_csv,  args.out_dir, args.test_size,  not args.no_header, args.no_header)
 
-# Read only the first 100 000 rows (header=0 to consume the header row)
-df = pd.read_csv(INPUT_CSV, nrows=NROWS, header=0)
+    reservoir_sample(
+        input_csv   = args.train_csv,
+        output_csv  = train_out,
+        sample_size = args.train_size,
+        has_header  = not args.no_header
+    )
+    reservoir_sample(
+        input_csv   = args.test_csv,
+        output_csv  = test_out,
+        sample_size = args.test_size,
+        has_header  = not args.no_header
+    )
 
-# Write those rows without header or index
-df.to_csv(OUTPUT_CSV, index=False, header=False)
-
-print(f"Wrote first {NROWS} rows to {OUTPUT_CSV}")
+if __name__ == "__main__":
+    main()
